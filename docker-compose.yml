@@ -1,0 +1,44 @@
+services:
+  demo-app:
+    image: nandanurseptama/golang_grafana
+    restart: always
+    build:
+      context: app
+    ports:
+      - 8080:8080
+      - 2221:2221
+    volumes:
+      - ./volumes/var/log:/var/log
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    ports:
+      - 8879:9090
+    volumes:
+      - ./volumes/prometheus:/prometheus
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+  promtail:
+    image: grafana/promtail
+    ports:
+      - 9080:9080
+      - 9081:9081
+    volumes:
+      - ./volumes/promtail:/promtail
+      - ./configs/promtail.yml:/etc/promtail/promtail.yml
+      - ./volumes/var/log:/var/log
+    command: -config.file=/etc/promtail/promtail.yml
+  loki:
+    image: grafana/loki
+    ports:
+      - 3100:3100
+    volumes:
+      - ./volumes/loki:/loki
+      - ./configs/loki.yml:/etc/loki/loki.yml
+    command: -config.file=/etc/loki/loki.yml
+  grafana:
+    image: grafana/grafana
+    restart: always
+    ports:
+      - 8878:3000
+    volumes:
+      - ./volumes/grafana:/var/lib/grafana
