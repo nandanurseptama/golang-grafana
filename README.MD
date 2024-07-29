@@ -17,7 +17,7 @@ docker pull grafana/grafana:latest
 docker pull grafana/loki:latest
 docker pull grafana/promtail:latest
 docker pull prom/prometheus:latest
-docker pull golang:1.22-alpine
+docker pull golang:1.22-alpine # image version depends on your go version
 ```
 
 - create `volumes` folder inside project
