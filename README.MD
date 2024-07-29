@@ -10,7 +10,7 @@ This is demo application contains example how to send log data to loki and prome
 git clone https://nandanurseptama/golang-grafana.git
 ```
 
-- pull docker necessary docker images
+- pull necessary docker images
 
 ```bash
 docker pull grafana/grafana:latest
