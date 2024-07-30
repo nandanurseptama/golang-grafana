@@ -5,18 +5,18 @@ services:
     build:
       context: app
     ports:
-      - 8080:8080
-      - 2221:2221
+      - 8080:8080 # expose service/app port
+      - 2221:2221 # expose prometheus client port
     volumes:
-      - ./volumes/var/log:/var/log
+      - ./volumes/var/log:/var/log # mounting local directory to container directory
   prometheus:
     image: prom/prometheus
     restart: always
     ports:
-      - 8879:9090
+      - 8879:9090 # expose prometheus service port
     volumes:
-      - ./volumes/prometheus:/prometheus
-      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./volumes/prometheus:/prometheus # mounting prometheus directory data to container directory
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml # mounting prometheus local directory config
   promtail:
     image: grafana/promtail
     ports:
