@@ -5,22 +5,55 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-var (
-	registerEndpointCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "total_register_request",
-		Help: "Total requested to register endpoint",
-	})
-)
-
+// Register api path handler
 func Register(logger *slog.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
+		var body User
+
+		// bind request body
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(
+				http.StatusInternalServerError,
+				map[string]any{"message": "failed to bind request body"},
+			)
+			ctx.Abort()
+			return
+		}
+
+		// guard when email and password empty
+		// send response error
+		if body.Email == "" || body.Password == "" {
+			ctx.JSON(
+				http.StatusBadRequest,
+				map[string]any{"message": "email and password required"},
+			)
+			ctx.Abort()
+			return
+		}
+
+		var findUser = User{}
+
+		for _, u := range registeredUser {
+			if u.Email == body.Email {
+				findUser = u
+				break
+			}
+		}
+
+		// guard when user email found
+		if findUser.Email != "" {
+			ctx.JSON(
+				http.StatusBadRequest,
+				map[string]any{"message": "email already registered"},
+			)
+			ctx.Abort()
+			return
+		}
 		traceId := ctx.GetString("traceId")
 		logger.Info("someone try to register", slog.Any("traceId", traceId))
-		registerEndpointCounter.Inc()
 		ctx.JSON(http.StatusOK, map[string]any{"message": "OK"})
 	}
 }

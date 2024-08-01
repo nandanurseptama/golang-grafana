@@ -12,9 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/nandanurseptama/golang_grafana/logger"
 	"github.com/nandanurseptama/golang_grafana/routers"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // get env variable, if not found use `defaultValue`
@@ -26,11 +24,9 @@ func safeEnv(name string, defaultValue string) string {
 	return val
 }
 func main() {
-	logFilePath := safeEnv("LOG_FILE_PATH", "volumes/var/log/app.log")
-	logClient := logger.New(logFilePath)
+	logClient := slog.Default()
 	port := safeEnv("PORT", "8080")
-	promServerPort := safeEnv("PROMETHEUS_SERVER_PORT", "2221")
-	r := gin.Default()
+	r := gin.New()
 
 	r.Use(func(ctx *gin.Context) {
 		traceId := uuid.NewString()
@@ -48,28 +44,16 @@ func main() {
 	r.POST("/api/login", routers.Login(logClient))
 	r.POST("/api/register", routers.Register(logClient))
 
-	promServer := gin.Default()
-	promServer.GET("/metrics", func(ctx *gin.Context) {
-		promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
-	})
-
 	ctx, cancel := context.WithCancel(context.Background())
 
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
-	signal.Notify(sig, syscall.SIGTERM)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		<-sig
+		sig := <-sig
+		slog.Info("receive signal ", slog.Any("signal", sig))
 		slog.Info("shutting down application")
 		cancel()
-	}()
-
-	go func() {
-		if err := promServer.Run(fmt.Sprintf(":%s", promServerPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("failed running prom server", slog.Any("err", err))
-			panic(err)
-		}
 	}()
 
 	go func() {
