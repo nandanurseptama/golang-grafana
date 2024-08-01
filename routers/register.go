@@ -18,7 +18,8 @@ var (
 
 func Register(logger *slog.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		logger.Info("someone try to register")
+		traceId := ctx.GetString("traceId")
+		logger.Info("someone try to register", slog.Any("traceId", traceId))
 		registerEndpointCounter.Inc()
 		ctx.JSON(http.StatusOK, map[string]any{"message": "OK"})
 	}

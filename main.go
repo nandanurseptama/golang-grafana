@@ -11,11 +11,13 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/nandanurseptama/golang_grafana/logger"
 	"github.com/nandanurseptama/golang_grafana/routers"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// get env variable, if not found use `defaultValue`
 func safeEnv(name string, defaultValue string) string {
 	val := os.Getenv(name)
 	if val == "" {
@@ -24,17 +26,20 @@ func safeEnv(name string, defaultValue string) string {
 	return val
 }
 func main() {
-	logFilePath := safeEnv("LOG_FILE_PATH", "volumes/var/app.log")
+	logFilePath := safeEnv("LOG_FILE_PATH", "volumes/var/log/app.log")
 	logClient := logger.New(logFilePath)
 	port := safeEnv("PORT", "8080")
 	promServerPort := safeEnv("PROMETHEUS_SERVER_PORT", "2221")
 	r := gin.Default()
 
 	r.Use(func(ctx *gin.Context) {
-		logClient.Info("new request come", slog.Any("path", ctx.FullPath()))
+		traceId := uuid.NewString()
+		ctx.Set("traceId", traceId)
+		logClient.Info("new request come", slog.Any("traceId", traceId), slog.Any("path", ctx.FullPath()))
 		ctx.Next()
 		logClient.Info(
 			"request end",
+			slog.Any("traceId", traceId),
 			slog.Any("path", ctx.FullPath()),
 			slog.Any("status", ctx.Writer.Status()),
 		)

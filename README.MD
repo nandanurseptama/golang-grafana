@@ -1,37 +1,45 @@
-# Golang Demo App with Grafana
+# Prometheus Metric Collection
 
-This is demo application contains example how to send log data to loki and prometheus
+This is demo application to collect metrics from your golang service
 
-## How to run
+## Initialization
 
-- clone repo
-
-```bash
-git clone https://nandanurseptama/golang-grafana.git
-```
-
-- pull necessary docker images
+In this article, we will use grafana and prometheus inside docker. So you need to pull grafana and prometheus images.
 
 ```bash
 docker pull grafana/grafana:latest
-docker pull grafana/loki:latest
-docker pull grafana/promtail:latest
 docker pull prom/prometheus:latest
-docker pull golang:1.22-alpine # image version depends on your go version
 ```
 
-- create `volumes` folder inside project
-
-- build demo app with docker file
+Create a simple api service, but in this article i will use `golang` and `gin` library (http server).
 
 ```bash
-docker build -t your-docker-image-name .
+mkdir golang-grafana
+cd golang-grafana
+go mod init github.com/your-username/your-repo-name.git
 ```
 
-- run docker compose
-```bash
-docker compose up -d
-```
+## Coding
 
-- access grafana and add loki and prometheus datasource
-- import dashboard from exporter folder
+Create `main.go` file inside root project.
+
+```go
+// get env variable, if not found use `defaultValue`
+func safeEnv(name string, defaultValue string) string {
+	val := os.Getenv(name)
+	if val == "" {
+		return defaultValue
+	}
+	return val
+}
+
+func main(){
+    port := safeEnv("PORT", "8080") // service port
+	promServerPort := safeEnv("PROMETHEUS_SERVER_PORT", "2221") // prometheus client port
+
+    // app http server
+    r := gin.Default()
+    // prometheus client server
+    promServer := gin.Default()
+}
+```

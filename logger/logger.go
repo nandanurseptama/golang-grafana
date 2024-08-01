@@ -7,7 +7,7 @@ import (
 )
 
 func New(logFile string) *slog.Logger {
-	f, err := os.OpenFile(logFile, os.O_RDWR, os.ModeAppend)
+	f, err := os.OpenFile(logFile, os.O_APPEND, os.ModeAppend)
 	if err != nil {
 		panic(err)
 	}

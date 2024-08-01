@@ -18,7 +18,8 @@ var (
 
 func Login(logger *slog.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		logger.Info("someone try to login")
+		traceId := ctx.GetString("traceId")
+		logger.Info("someone try to login", slog.Any("traceId", traceId))
 		loginEndpointCounter.Inc()
 		ctx.JSON(http.StatusOK, map[string]any{"message": "OK"})
 	}
