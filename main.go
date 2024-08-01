@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/nandanurseptama/golang_grafana/routers"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // get env variable, if not found use `defaultValue`
@@ -43,6 +44,9 @@ func main() {
 
 	r.POST("/api/login", routers.Login(logClient))
 	r.POST("/api/register", routers.Register(logClient))
+	r.GET("/metrics", func(ctx *gin.Context) {
+		promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 

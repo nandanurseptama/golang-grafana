@@ -20,6 +20,7 @@ func Login(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "failed to bind request body"},
 			)
 			ctx.Abort()
+			totalFailedLoginCounter.Inc()
 			return
 		}
 
@@ -31,6 +32,7 @@ func Login(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "email and password required"},
 			)
 			ctx.Abort()
+			totalFailedLoginCounter.Inc()
 			return
 		}
 
@@ -50,6 +52,7 @@ func Login(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "email or password not match"},
 			)
 			ctx.Abort()
+			totalFailedLoginCounter.Inc()
 			return
 		}
 
@@ -60,11 +63,13 @@ func Login(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "email or password not match"},
 			)
 			ctx.Abort()
+			totalFailedLoginCounter.Inc()
 			return
 		}
-
 		traceId := ctx.GetString("traceId")
 		logger.Info("someone try to login", slog.Any("traceId", traceId))
 		ctx.JSON(http.StatusOK, map[string]any{"message": "OK"})
+		ctx.Abort()
+		totalSuccessLoginCounter.Inc()
 	}
 }

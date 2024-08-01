@@ -20,6 +20,7 @@ func Register(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "failed to bind request body"},
 			)
 			ctx.Abort()
+			totalFailedRegisterCounter.Inc()
 			return
 		}
 
@@ -31,6 +32,7 @@ func Register(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "email and password required"},
 			)
 			ctx.Abort()
+			totalFailedRegisterCounter.Inc()
 			return
 		}
 
@@ -50,10 +52,12 @@ func Register(logger *slog.Logger) gin.HandlerFunc {
 				map[string]any{"message": "email already registered"},
 			)
 			ctx.Abort()
+			totalFailedRegisterCounter.Inc()
 			return
 		}
 		traceId := ctx.GetString("traceId")
 		logger.Info("someone try to register", slog.Any("traceId", traceId))
 		ctx.JSON(http.StatusOK, map[string]any{"message": "OK"})
+		totalSuccessRegisterCounter.Inc()
 	}
 }
