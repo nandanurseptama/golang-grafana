@@ -1,0 +1,25 @@
+services:
+  demo-app:
+    image: nandanurseptama/golang_grafana
+    restart: always
+    build:
+      context: app
+    ports:
+      - 8080:8080 # expose service/app port
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    ports:
+      - 9090:9090 # expose prometheus service port
+    volumes:
+      - ./volumes/prometheus:/prometheus # mounting prometheus directory data to container directory
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # mounting prometheus local directory config
+  grafana:
+    image: grafana/grafana
+    restart: always
+    ports:
+      - 8878:3000
+    volumes:
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning
+      - ./dashboards/prometheus/demo_app_stats.json:/usr/lib/dashboards/dashboard.json
+      - ./volumes/grafana:/var/lib/grafana
